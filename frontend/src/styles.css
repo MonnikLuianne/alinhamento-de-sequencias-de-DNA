@@ -542,7 +542,7 @@ p {
   font-size: 0.78rem;
 }
 
-/* Alinhamento: uma caixa por posição, contendo as duas letras */
+/* Alinhamento */
 
 .alignment-view {
   min-width: 0;
@@ -594,14 +594,15 @@ p {
   min-width: 100%;
 }
 
+/* célula com 3 linhas: letra seq1 / letra seq2 / símbolo */
 .alignment-cell {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   flex: 0 0 43px;
-  min-height: 78px;
-  gap: 7px;
+  min-height: 96px;
+  gap: 4px;
   border: 1px solid;
   border-radius: 8px;
   font-family: "DM Mono", monospace;
@@ -628,21 +629,16 @@ p {
   color: #ff9da5;
 }
 
-.indicator-row {
-  display: flex;
-  gap: 4px;
-  width: max-content;
-  min-width: 100%;
-  margin-top: 7px;
-}
-
+/* símbolo agora DENTRO da célula */
 .indicator-cell {
-  display: grid;
-  flex: 0 0 43px;
-  place-items: center;
-  color: var(--muted);
+  width: 100%;
+  text-align: center;
+  font-size: 0.75rem;
   font-family: "DM Mono", monospace;
-  font-size: 0.85rem;
+  color: var(--muted);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 4px;
+  margin-top: 2px;
 }
 
 .alignment-labels {
@@ -870,10 +866,6 @@ p {
   }
 
   .alignment-cell {
-    flex-basis: 38px;
-  }
-
-  .indicator-cell {
     flex-basis: 38px;
   }
 

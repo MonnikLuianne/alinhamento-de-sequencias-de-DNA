@@ -4,15 +4,15 @@ function getPositionType(a, b) {
   return "mismatch";
 }
 
+function getIndicator(a, b) {
+  if (a === "-" || b === "-") return "-";
+  return a === b ? "|" : ".";
+}
+
 export default function AlignmentView({ seq1, seq2 }) {
   if (!seq1 || !seq2) {
     return <p>Não há alinhamento para exibir.</p>;
   }
-
-  const indicator = Array.from(seq1, (base, index) => {
-    if (base === "-" || seq2[index] === "-") return "-";
-    return base === seq2[index] ? "|" : ".";
-  });
 
   return (
     <div className="alignment-view">
@@ -26,22 +26,16 @@ export default function AlignmentView({ seq1, seq2 }) {
         <div className="alignment-row">
           {Array.from(seq1, (base, index) => {
             const type = getPositionType(base, seq2[index]);
+            const symbol = getIndicator(base, seq2[index]);
 
             return (
               <div className={`alignment-cell ${type}`} key={index}>
-                <span>{base}</span>
-                <span>{seq2[index]}</span>
+                <span className="cell-base">{base}</span>
+                <span className="indicator-cell">{symbol}</span>
+                <span className="cell-base">{seq2[index]}</span>
               </div>
             );
           })}
-        </div>
-
-        <div className="indicator-row">
-          {indicator.map((symbol, index) => (
-            <span className="indicator-cell" key={index}>
-              {symbol}
-            </span>
-          ))}
         </div>
 
         <div className="alignment-labels">
