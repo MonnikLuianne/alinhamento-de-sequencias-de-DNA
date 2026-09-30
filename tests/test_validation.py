@@ -1,6 +1,7 @@
-#A5
-from backend.validation import load_sequences_from_file
+# A5
+
 from backend.validation import (
+    load_sequences_from_file,
     normalize_sequence,
     validate_sequence,
     validate_input
@@ -11,23 +12,27 @@ def test_normalize_sequence():
     assert normalize_sequence("acgtac") == "ACGTAC"
 
 
+def test_normalize_sequence_com_espacos():
+    assert normalize_sequence("  acgt  ") == "ACGT"
+
+
 def test_valid_sequence():
     valid, message = validate_sequence("ACGT")
-    
+
     assert valid is True
     assert message == ""
 
 
 def test_empty_sequence():
     valid, message = validate_sequence("")
-    
+
     assert valid is False
     assert "vazia" in message
 
 
 def test_invalid_base():
     valid, message = validate_sequence("ACGX")
-    
+
     assert valid is False
     assert "base inválida" in message
 
@@ -36,6 +41,19 @@ def test_valid_input():
     valid, message = validate_input(
         "ACGTAC",
         "ACGTTC",
+        2,
+        -1,
+        -2
+    )
+
+    assert valid is True
+    assert message == ""
+
+
+def test_valid_input_lowercase():
+    valid, message = validate_input(
+        "acgt",
+        "acgt",
         2,
         -1,
         -2
@@ -70,12 +88,38 @@ def test_match_zero():
     assert "Match" in message
 
 
+def test_match_negativo():
+    valid, message = validate_input(
+        "ACGT",
+        "ACGT",
+        -2,
+        -1,
+        -2
+    )
+
+    assert valid is False
+    assert "Match" in message
+
+
 def test_mismatch_zero():
     valid, message = validate_input(
         "ACGT",
         "ACGT",
         2,
         0,
+        -2
+    )
+
+    assert valid is False
+    assert "Mismatch" in message
+
+
+def test_mismatch_positivo():
+    valid, message = validate_input(
+        "ACGT",
+        "ACGT",
+        2,
+        1,
         -2
     )
 
@@ -95,11 +139,78 @@ def test_gap_zero():
     assert valid is False
     assert "Gap" in message
 
+
+def test_gap_positivo():
+    valid, message = validate_input(
+        "ACGT",
+        "ACGT",
+        2,
+        -1,
+        2
+    )
+
+    assert valid is False
+    assert "Gap" in message
+
+
+def test_match_nao_inteiro():
+    valid, message = validate_input(
+        "ACGT",
+        "ACGT",
+        "2",
+        -1,
+        -2
+    )
+
+    assert valid is False
+    assert "Match" in message
+
+
+def test_mismatch_nao_inteiro():
+    valid, message = validate_input(
+        "ACGT",
+        "ACGT",
+        2,
+        "-1",
+        -2
+    )
+
+    assert valid is False
+    assert "Mismatch" in message
+
+
+def test_gap_nao_inteiro():
+    valid, message = validate_input(
+        "ACGT",
+        "ACGT",
+        2,
+        -1,
+        "-2"
+    )
+
+    assert valid is False
+    assert "Gap" in message
+
+
 def test_load_txt_file(tmp_path):
     file = tmp_path / "sequencias.txt"
 
     file.write_text(
         "ACGTAC\nACGTTC\n",
+        encoding="utf-8"
+    )
+
+    valid, sequences = load_sequences_from_file(file)
+
+    assert valid is True
+    assert sequences == ["ACGTAC", "ACGTTC"]
+
+
+def test_load_txt_minusculo(tmp_path):
+    file = tmp_path / "sequencias.txt"
+
+    file.write_text(
+        "acgtac\nacgttc\n",
         encoding="utf-8"
     )
 
@@ -175,3 +286,17 @@ def test_wrong_number_of_sequences(tmp_path):
 
     assert valid is False
     assert "exatamente duas" in message
+
+
+def test_empty_file(tmp_path):
+    file = tmp_path / "sequencias.txt"
+
+    file.write_text(
+        "",
+        encoding="utf-8"
+    )
+
+    valid, message = load_sequences_from_file(file)
+
+    assert valid is False
+    assert "vazio" in message

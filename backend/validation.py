@@ -1,13 +1,16 @@
-#validar as entradas (A1)
-#Streamlit
+# validar as entradas (A1)
+# Streamlit
+
 from pathlib import Path
+
 BASES_VALIDAS = {"A", "C", "G", "T"}
+
+
 def normalize_sequence(sequence):
     return sequence.strip().upper()
 
+
 def validate_sequence(sequence, nome="sequência"):
-
-
     if not isinstance(sequence, str):
         return False, f"ERRO: {nome} deve ser um texto."
 
@@ -22,7 +25,6 @@ def validate_sequence(sequence, nome="sequência"):
 
 
 def validate_input(seq1, seq2, match, mismatch, gap):
-
     if seq1 is None or seq2 is None:
         return False, "ERRO: exatamente duas sequências devem ser fornecidas."
 
@@ -37,6 +39,7 @@ def validate_input(seq1, seq2, match, mismatch, gap):
     if not valid:
         return False, message
 
+    # Os parâmetros precisam ser números inteiros.
     if not isinstance(match, int) or isinstance(match, bool):
         return False, "ERRO: Match deve ser um número inteiro."
 
@@ -46,18 +49,20 @@ def validate_input(seq1, seq2, match, mismatch, gap):
     if not isinstance(gap, int) or isinstance(gap, bool):
         return False, "ERRO: Gap deve ser um número inteiro."
 
-    if match == 0:
-        return False, "ERRO: Match não pode ser zero."
+    # Regras de pontuação.
+    if match <= 0:
+        return False, "ERRO: Match deve ser maior que zero."
 
-    if mismatch == 0:
-        return False, "ERRO: Mismatch não pode ser zero."
+    if mismatch >= 0:
+        return False, "ERRO: Mismatch deve ser menor que zero."
 
-    if gap == 0:
-        return False, "ERRO: Gap não pode ser zero."
+    if gap >= 0:
+        return False, "ERRO: Gap deve ser menor que zero."
 
     return True, ""
-def load_sequences_from_file(file_path):
 
+
+def load_sequences_from_file(file_path):
     path = Path(file_path)
 
     if not path.exists():
@@ -71,7 +76,12 @@ def load_sequences_from_file(file_path):
 
     try:
         with open(path, "r", encoding="utf-8") as file:
-            lines = [line.strip() for line in file if line.strip()]
+            lines = [
+                line.strip()
+                for line in file
+                if line.strip()
+            ]
+
     except (OSError, UnicodeDecodeError):
         return False, "Não foi possível ler o arquivo."
 
@@ -96,10 +106,13 @@ def load_sequences_from_file(file_path):
 
     else:
         sequences = lines
+
     if len(sequences) != 2:
         return False, "O arquivo deve conter exatamente duas sequências."
 
     for i, sequence in enumerate(sequences, start=1):
+        sequence = normalize_sequence(sequence)
+
         valid, message = validate_sequence(
             sequence,
             f"Sequência {i}"
