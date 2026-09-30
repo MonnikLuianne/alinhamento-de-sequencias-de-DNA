@@ -1,17 +1,11 @@
 # A4
-
 from backend.matrix import initialize_local_matrix, create_traceback_matrix
 
-
 def score_pair(base1, base2, match, mismatch):
-
     if base1 == base2:
         return match
-
     else:
         return mismatch
-
-
 def run_local(seq1, seq2, match, mismatch, gap):
 
     seq1 = seq1.strip().upper()
@@ -32,25 +26,19 @@ def run_local(seq1, seq2, match, mismatch, gap):
 
     # Preenchimento da matriz
     for i in range(1, rows):
-
         for j in range(1, col):
-
             pair_score = score_pair(
                 seq1[i - 1],
                 seq2[j - 1],
                 match,
                 mismatch
             )
-
             # Diagonal
             diagonal = matrix[i - 1][j - 1] + pair_score
-
             # Vertical
             vertical = matrix[i - 1][j] + gap
-
             # Horizontal
             horizontal = matrix[i][j - 1] + gap
-
             # Smith-Waterman
             best_score = max(
                 diagonal,
@@ -58,25 +46,19 @@ def run_local(seq1, seq2, match, mismatch, gap):
                 horizontal,
                 0
             )
-
             matrix[i][j] = best_score
 
-            # Prioridade:
-            # diagonal > vertical > horizontal
+            # Prioridade: diagonal > vertical > horizontal
             if best_score == 0:
-
                 traceback_matrix[i][j] = None
 
             elif best_score == diagonal:
-
                 traceback_matrix[i][j] = "DIAGONAL"
 
             elif best_score == vertical:
-
                 traceback_matrix[i][j] = "VERTICAL"
 
             elif best_score == horizontal:
-
                 traceback_matrix[i][j] = "HORIZONTAL"
 
             # Guarda a maior pontuação encontrada
@@ -104,14 +86,11 @@ def run_local(seq1, seq2, match, mismatch, gap):
 
             aligned_seq1.append(seq1[i - 1])
             aligned_seq2.append(seq2[j - 1])
-
             i -= 1
             j -= 1
-
         elif direction == "VERTICAL":
             aligned_seq1.append(seq1[i - 1])
             aligned_seq2.append("-")
-
             i -= 1
         elif direction == "HORIZONTAL":
             aligned_seq1.append("-")
@@ -120,8 +99,7 @@ def run_local(seq1, seq2, match, mismatch, gap):
         else:
             break
 
-    # O traceback foi feito de trás para frente,
-    # então precisamos inverter as sequências.
+    # O traceback foi feito de trás para frente, então precisamos inverter as sequências.
     aligned_seq1.reverse()
     aligned_seq2.reverse()
 
