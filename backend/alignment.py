@@ -3,6 +3,27 @@ from backend.smith_waterman import run_local
 from backend.needleman_wunsch import run_global
 
 
+def build_alignment_visual(seq1_aln, seq2_aln):
+    """
+    Gera a representação visual do alinhamento.
+
+    | = match
+    . = mismatch
+      = gap
+    """
+    visual = []
+
+    for base1, base2 in zip(seq1_aln, seq2_aln):
+        if base1 == "-" or base2 == "-":
+            visual.append(" ")
+        elif base1 == base2:
+            visual.append("|")
+        else:
+            visual.append(".")
+
+    return "".join(visual)
+
+
 def run_alignment(seq1, seq2, method, match, mismatch, gap):
     """
     Executa o alinhamento LOCAL ou GLOBAL após validar as entradas.
@@ -53,5 +74,10 @@ def run_alignment(seq1, seq2, method, match, mismatch, gap):
     result["match"] = match
     result["mismatch"] = mismatch
     result["gap"] = gap
+
+    result["visual"] = build_alignment_visual(
+        result["seq1_aln"],
+        result["seq2_aln"]
+    )
 
     return result

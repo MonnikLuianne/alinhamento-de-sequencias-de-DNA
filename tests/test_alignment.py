@@ -1,6 +1,6 @@
 import pytest
 
-from backend.alignment import run_alignment
+from backend.alignment import run_alignment, build_alignment_visual
 
 
 def test_run_alignment_global():
@@ -69,3 +69,57 @@ def test_run_alignment_sequencia_invalida():
             -1,
             -2
         )
+
+
+def test_build_alignment_visual_match():
+    visual = build_alignment_visual(
+        "ACGT",
+        "ACGT"
+    )
+
+    assert visual == "||||"
+
+
+def test_build_alignment_visual_mismatch():
+    visual = build_alignment_visual(
+        "ACGTAC",
+        "ACGTTC"
+    )
+
+    assert visual == "||||.|"
+
+
+def test_build_alignment_visual_gap():
+    visual = build_alignment_visual(
+        "ACGT",
+        "A-GT"
+    )
+
+    assert visual == "| ||"
+
+
+def test_visual_alignment_global():
+    resultado = run_alignment(
+        "ACGTAC",
+        "ACGTTC",
+        "GLOBAL",
+        2,
+        -1,
+        -2
+    )
+
+    assert resultado["visual"] == "||||.|"
+
+
+def test_visual_tem_mesmo_tamanho_do_alinhamento():
+    resultado = run_alignment(
+        "ACGT",
+        "AGT",
+        "GLOBAL",
+        2,
+        -1,
+        -2
+    )
+
+    assert len(resultado["visual"]) == len(resultado["seq1_aln"])
+    assert len(resultado["visual"]) == len(resultado["seq2_aln"])
