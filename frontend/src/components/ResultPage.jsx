@@ -73,20 +73,54 @@ function downloadFile(filename, content, type = "text/plain;charset=utf-8") {
   URL.revokeObjectURL(url);
 }
 
-function matrixToCSV(matrix) {
-  return matrix.map((row) => row.join(",")).join("\n");
+function scoreMatrixToCSV(matrix, seq1, seq2) {
+  const colHeaders = [" ", "-", ...seq2.split("")];
+  const rowHeaders = ["-", ...seq1.split("")];
+
+  const header = colHeaders.join(",");
+
+  const rows = matrix.map((row, i) =>
+    [rowHeaders[i], ...row].join(",")
+  );
+
+  return [header, ...rows].join("\n");
+}
+
+function tracebackMatrixToCSV(matrix, seq1, seq2) {
+  const arrowMap = {
+    DIAGONAL: "↖",
+    VERTICAL: "↑",
+    HORIZONTAL: "←",
+  };
+
+  const colHeaders = [" ", "-", ...seq2.split("")];
+  const rowHeaders = ["-", ...seq1.split("")];
+
+  const header = colHeaders.join(",");
+
+  const rows = matrix.map((row, i) => {
+    const cells = row.map((cell) => {
+      const key = String(cell).toUpperCase();
+      return arrowMap[key] ?? cell ?? " ";
+    });
+    return [rowHeaders[i], ...cells].join(",");
+  });
+
+  return [header, ...rows].join("\n");
 }
 
 function alignmentToCSV(seq1, seq2) {
-  const indicator = Array.from(seq1, (base, index) => {
-    if (base === "-" || seq2[index] === "-") return "-";
-    return base === seq2[index] ? "|" : ".";
-  }).join("");
+  const header = "Posição,Seq1,Indicador,Seq2";
 
-  return [
-    "Sequencia1,Indicador,Sequencia2",
-    `${seq1},${indicator},${seq2}`,
-  ].join("\n");
+  const rows = Array.from(seq1, (base, index) => {
+    let indicator;
+    if (base === "-" || seq2[index] === "-") indicator = "-";
+    else indicator = base === seq2[index] ? "|" : ".";
+
+    return `${index + 1},${base},${indicator},${seq2[index]}`;
+  });
+
+  return [header, ...rows].join("\n");
 }
 
 export default function ResultPage({ config, result, onBack, onHome }) {
@@ -116,6 +150,17 @@ export default function ResultPage({ config, result, onBack, onHome }) {
 
   const totalCells = matrix.reduce((total, row) => total + row.length, 0);
 
+  const indicator = Array.from(seq1, (base, index) => {
+    if (base === "-" || seq2[index] === "-") return "-";
+    return base === seq2[index] ? "|" : ".";
+  }).join("");
+
+  const reportCSV =
+    "MATRIZ DE PONTUAÇÃO\n" +
+    scoreMatrixToCSV(matrix, config.sequence1, config.sequence2) +
+    "\n\nMATRIZ DE TRACEBACK\n" +
+    tracebackMatrixToCSV(traceback, config.sequence1, config.sequence2);
+
   const report = [
     "RELATÓRIO DE ALINHAMENTO DE DNA",
     `Método: ${config.method === "global" ? "Needleman-Wunsch (global)" : "Smith-Waterman (local)"}`,
@@ -125,20 +170,18 @@ export default function ResultPage({ config, result, onBack, onHome }) {
     `Mismatch: ${config.mismatch}`,
     `Gap: ${config.gap}`,
     `Score final: ${score}`,
+    `Tamanho do alinhamento: ${Math.max(seq1.length, seq2.length)}`,
     "",
     "ALINHAMENTO",
-    seq1,
-    Array.from(seq1, (base, index) => {
-      if (base === "-" || seq2[index] === "-") return "-";
-      return base === seq2[index] ? "|" : ".";
-    }).join(""),
-    seq2,
+    `Seq1: ${seq1}`,
+    `      ${indicator}`,
+    `Seq2: ${seq2}`,
     "",
     "MATRIZ DE PONTUAÇÃO",
-    matrixToCSV(matrix),
+    scoreMatrixToCSV(matrix, config.sequence1, config.sequence2),
     "",
     "MATRIZ DE TRACEBACK",
-    matrixToCSV(traceback),
+    tracebackMatrixToCSV(traceback, config.sequence1, config.sequence2),
   ].join("\n");
 
   return (
@@ -271,15 +314,22 @@ export default function ResultPage({ config, result, onBack, onHome }) {
           <span className="eyebrow">05</span>
           <h2>Exportar resultados</h2>
           <p className="panel-description">
-            Salve o relatório completo ou exporte as matrizes separadamente.
+            Salve o relatório completo ou exporte os arquivos separadamente.
           </p>
 
           <div className="export-buttons">
             <button
               className="secondary-button"
-              onClick={() => downloadFile("relatorio.txt", report)}
+              onClick={() => {
+                downloadFile("relatorio.txt", report);
+                downloadFile(
+                  "relatorio_matrizes.csv",
+                  reportCSV,
+                  "text/csv;charset=utf-8"
+                );
+              }}
             >
-              ↓ Relatório TXT
+              ↓ Relatório TXT + Matrizes CSV
             </button>
 
             <button
@@ -287,7 +337,7 @@ export default function ResultPage({ config, result, onBack, onHome }) {
               onClick={() =>
                 downloadFile(
                   "matriz_pontuacao.csv",
-                  matrixToCSV(matrix),
+                  scoreMatrixToCSV(matrix, config.sequence1, config.sequence2),
                   "text/csv;charset=utf-8"
                 )
               }
@@ -300,7 +350,7 @@ export default function ResultPage({ config, result, onBack, onHome }) {
               onClick={() =>
                 downloadFile(
                   "matriz_traceback.csv",
-                  matrixToCSV(traceback),
+                  tracebackMatrixToCSV(traceback, config.sequence1, config.sequence2),
                   "text/csv;charset=utf-8"
                 )
               }
