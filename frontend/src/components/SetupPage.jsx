@@ -280,28 +280,57 @@ const S = {
 
 /* ─── parser de arquivo ─────────────────────────────────────────────── */
 function parseFile(text) {
-  const lines = text
+  const lines = String(text ?? "")
+    .replace(/^\uFEFF/, "")
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean);
 
-  if (lines.some((line) => line.startsWith(">"))) {
-    const sequences = [];
-    let current = "";
+  if (lines.length === 0) {
+    throw new Error("O arquivo está vazio.");
+  }
+
+  let sequences = [];
+
+  if (lines[0].startsWith(">")) {
+    // FASTA: cada cabeçalho representa um registro, inclusive se estiver vazio.
+    let current = null;
+
     for (const line of lines) {
       if (line.startsWith(">")) {
-        if (current) sequences.push(current);
+        if (!line.slice(1).trim()) {
+          throw new Error("Cabeçalho FASTA inválido.");
+        }
+        if (current !== null) sequences.push(current);
         current = "";
       } else {
         current += line.replace(/\s/g, "");
       }
     }
-    if (current) sequences.push(current);
-    return sequences;
+    if (current !== null) sequences.push(current);
+  } else {
+    // TXT: exatamente uma sequência por linha não vazia.
+    if (lines.some((line) => line.startsWith(">"))) {
+      throw new Error("Formato de arquivo inválido.");
+    }
+    sequences = lines;
   }
 
-  if (lines.length === 2) return lines;
-  return [];
+  if (sequences.length !== 2) {
+    throw new Error("O arquivo precisa conter exatamente duas sequências.");
+  }
+
+  return sequences.map((sequence, index) => {
+    const cleaned = sequence.toUpperCase();
+    if (!cleaned) {
+      throw new Error(`A sequência ${index + 1} está vazia.`);
+    }
+    const invalid = cleaned.match(/[^ACGT]/);
+    if (invalid) {
+      throw new Error(`Base inválida na sequência ${index + 1}: ${invalid[0]}`);
+    }
+    return cleaned;
+  });
 }
 
 /* ─── componente ────────────────────────────────────────────────────── */
@@ -325,26 +354,24 @@ export default function SetupPage({ config, setConfig, onBack, onResult }) {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    setError("");
+    setFilename("");
+
     if (!/\.(txt|fasta|fa)$/i.test(file.name)) {
       setError("Escolha um arquivo .txt, .fasta ou .fa.");
+      event.target.value = "";
       return;
     }
 
     try {
       const text = await file.text();
-      const sequences = parseFile(text);
-
-      if (sequences.length !== 2) {
-        setError("O arquivo precisa conter exatamente duas sequências.");
-        return;
-      }
-
-      updateConfig("sequence1", cleanSequence(sequences[0]));
-      updateConfig("sequence2", cleanSequence(sequences[1]));
+      const [sequence1, sequence2] = parseFile(text);
+      setConfig((prev) => ({ ...prev, sequence1, sequence2 }));
       setFilename(file.name);
-      setError("");
-    } catch {
-      setError("Não foi possível ler o arquivo.");
+    } catch (err) {
+      setError(err?.message || "Não foi possível ler o arquivo.");
+    } finally {
+      event.target.value = "";
     }
   }
 
@@ -362,6 +389,13 @@ export default function SetupPage({ config, setConfig, onBack, onResult }) {
     }
     if (!/^[ACGT]+$/.test(sequence2)) {
       setError("A sequência 2 contém caracteres inválidos. Use apenas A, C, G e T.");
+      return;
+    }
+
+    if ([config.match, config.mismatch, config.gap].some(
+      (value) => value === null || value === undefined || String(value).trim() === ""
+    )) {
+      setError("Preencha os três parâmetros de pontuação.");
       return;
     }
 
