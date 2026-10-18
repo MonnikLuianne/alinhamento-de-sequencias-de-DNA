@@ -2,7 +2,7 @@
 
 Trabalho prático da disciplina **Tópicos em Bioinformática** — Ciência da Computação · UFPI  
 **Professor:** Luiz Cláudio Demes da Mata Sousa  
-**Integrantes:** Monnik Luianne Oliveira Nascimento Veloso Barbosa · Benjamin Pessoa Vale Filho
+**Integrantes:** Monnik Luianne Oliveira Nascimento Veloso Barbosa · Benjamim Pessoa Vale Filho
 
 ---
 
@@ -73,12 +73,9 @@ Antes de rodar o projeto, certifique-se de ter instalado:
 
 ## 📦 Instalação
 
-### 1. Clone o repositório
+### 1. Abra a pasta do projeto
 
-```bash
-git clone https://github.com/seu-usuario/alinhamento-de-sequencias-de-DNA.git
-cd alinhamento-de-sequencias-de-DNA
-```
+Extraia os arquivos e abra o terminal na pasta `alinhamento-de-sequencias-de-DNA/`.
 
 ### 2. Instale as dependências do backend
 
@@ -100,32 +97,30 @@ cd ..
 
 ## ▶️ Como rodar
 
-O projeto precisa de dois terminais rodando ao mesmo tempo.
+A interface web executa os algoritmos diretamente no navegador, por meio de `frontend/src/services/api.js`. O backend Python possui uma implementação independente e é opcional para usar a interface.
 
-### Terminal 1 — Backend
+### Interface web (recomendado)
 
-Na pasta raiz do projeto:
-
-```bash
-uvicorn backend.main:app --reload
-```
-
-O servidor vai iniciar em `http://localhost:8000`. Para confirmar, abra essa URL no navegador — deve aparecer:
-
-```json
-{"message": "API de alinhamento de sequências funcionando."}
-```
-
-### Terminal 2 — Frontend
+No terminal, a partir da raiz do projeto:
 
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
 
-O servidor de desenvolvimento vai iniciar em `http://localhost:5173`.
+Abra o endereço indicado pelo Vite (normalmente `http://localhost:5173`).
 
-Abra **http://localhost:5173** no navegador para usar a aplicação.
+### Backend Python (opcional)
+
+Em outro terminal, a partir da raiz do projeto:
+
+```bash
+pip install -r requirements.txt
+uvicorn backend.main:app --reload
+```
+
+A documentação interativa da API pode ser consultada em `http://localhost:8000/docs`. O frontend atual não depende dessa API.
 
 ---
 
@@ -154,7 +149,7 @@ As sequências podem ser inseridas de duas formas:
 
 **Carregando arquivo:**
 - Clique em **Escolher arquivo**
-- São aceitos arquivos `.txt` e `.fasta`
+- São aceitos arquivos `.txt`, `.fasta` e `.fa`
 - O arquivo deve conter exatamente duas sequências
 
 Formato `.fasta` esperado:
@@ -193,7 +188,7 @@ Exibe as duas sequências alinhadas com indicação visual:
 - `.` — mismatch (bases diferentes)
 - ` ` (espaço) — gap (inserção ou deleção)
 
-No alinhamento local, se houver mais de um alinhamento com o mesmo score máximo, um seletor permite navegar entre eles.
+No alinhamento local, a aplicação utiliza um alinhamento principal determinístico. Em caso de empates nas direções, a prioridade é diagonal, depois vertical e, por último, horizontal. Se houver mais de uma célula com score máximo, é escolhida a primeira encontrada no preenchimento.
 
 #### 02 — Matriz de pontuação
 Tabela completa com os valores calculados para cada célula (i, j). O caminho do traceback aparece destacado. O controle **passo a passo** permite visualizar o preenchimento célula a célula, útil para entender a progressão da programação dinâmica.
@@ -298,3 +293,15 @@ Traceback: da célula de maior valor até encontrar uma célula com valor `0`.
 | `ACGT` | `ACGT` | Global | 2 | -1 | -2 | 8 |
 | `TTTACGTACGTTT` | `ACGT` | Local | 2 | -1 | -2 | 8 |
 | `AAAA` | `TTTT` | Local | 2 | -1 | -2 | 0 |
+
+---
+
+## 🧪 Executando os testes Python
+
+A partir da raiz do projeto, com as dependências instaladas:
+
+```bash
+python -m pytest -v
+```
+
+Os testes verificam a lógica Python. Além deles, recomenda-se validar a interface no navegador, os formatos de arquivo e as exportações.
