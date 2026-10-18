@@ -66,7 +66,6 @@ const S = {
     color: "#7aab8a",
     margin: "0 0 24px",
   },
-  /* cards de método */
   methodGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
@@ -118,7 +117,6 @@ const S = {
     fontFamily: "inherit",
     padding: 0,
   },
-  /* upload */
   uploadZone: {
     border: "1.5px dashed #2e5c3a",
     borderRadius: 12,
@@ -163,7 +161,6 @@ const S = {
     fontSize: 13,
     marginTop: 8,
   },
-  /* sequências */
   seqGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
@@ -210,7 +207,6 @@ const S = {
     color: "#7aab8a",
   },
   hintIcon: { color: "#4caf50", flexShrink: 0 },
-  /* parâmetros */
   paramsGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(3, 1fr)",
@@ -236,7 +232,6 @@ const S = {
     width: "100%",
     boxSizing: "border-box",
   },
-  /* erro */
   errorBox: {
     maxWidth: 900,
     margin: "0 auto 16px",
@@ -250,7 +245,6 @@ const S = {
     color: "#f28b82",
     fontSize: 14,
   },
-  /* ações */
   actions: {
     maxWidth: 900,
     margin: "0 auto",
@@ -375,9 +369,12 @@ export default function SetupPage({ config, setConfig, onBack, onResult }) {
     const mismatch = Number(config.mismatch);
     const gap = Number(config.gap);
 
-    if (!Number.isInteger(match) || match === 0) { setError("Match deve ser um inteiro diferente de zero."); return; }
-    if (!Number.isInteger(mismatch) || mismatch === 0) { setError("Mismatch deve ser um inteiro diferente de zero."); return; }
-    if (!Number.isInteger(gap) || gap === 0) { setError("Gap deve ser um inteiro diferente de zero."); return; }
+    if (!Number.isInteger(match)) { setError("Match deve ser um número inteiro."); return; }
+    if (match <= 0) { setError("Match deve ser maior que zero (valor positivo)."); return; }
+    if (!Number.isInteger(mismatch)) { setError("Mismatch deve ser um número inteiro."); return; }
+    if (mismatch >= 0) { setError("Mismatch deve ser menor que zero (valor negativo)."); return; }
+    if (!Number.isInteger(gap)) { setError("Gap deve ser um número inteiro."); return; }
+    if (gap >= 0) { setError("Gap deve ser menor que zero (valor negativo)."); return; }
 
     setLoading(true);
     try {
@@ -395,7 +392,6 @@ export default function SetupPage({ config, setConfig, onBack, onResult }) {
 
       <button style={S.backBtn} onClick={onBack}>← Voltar</button>
 
-      {/* HERO */}
       <div style={S.hero}>
         <h1 style={S.heroTitle}>Configure seu alinhamento</h1>
         <p style={S.heroSub}>Escolha o método, informe as sequências e defina os parâmetros.</p>
@@ -408,7 +404,6 @@ export default function SetupPage({ config, setConfig, onBack, onResult }) {
           <p style={S.sectionDesc}>Escolha como deseja comparar as sequências.</p>
 
           <div style={S.methodGrid}>
-
             <button
               style={S.methodCard(config.method === "global")}
               onClick={() => updateConfig("method", "global")}
@@ -438,7 +433,6 @@ export default function SetupPage({ config, setConfig, onBack, onResult }) {
                 : <span style={S.selectLink}>Selecionar</span>
               }
             </button>
-
           </div>
         </div>
       </div>
@@ -449,7 +443,6 @@ export default function SetupPage({ config, setConfig, onBack, onResult }) {
           <div style={S.sectionNumber}>02. Sequências de DNA</div>
           <p style={S.sectionDesc}>Digite as sequências ou carregue um arquivo com as duas.</p>
 
-          {/* upload zone */}
           <div style={S.uploadZone}>
             <div style={S.uploadArrow}>↑</div>
             <div style={S.uploadTitle}>Carregar arquivo</div>
@@ -473,7 +466,6 @@ export default function SetupPage({ config, setConfig, onBack, onResult }) {
             {filename && <p style={S.successText}>✓ {filename} carregado com sucesso</p>}
           </div>
 
-          {/* textareas */}
           <div style={S.seqGrid}>
             <label style={S.seqLabel}>
               <span>
@@ -519,11 +511,11 @@ export default function SetupPage({ config, setConfig, onBack, onResult }) {
       <div style={S.section}>
         <div style={S.sectionCard}>
           <div style={S.sectionNumber}>03. Parâmetros de pontuação</div>
-          <p style={S.sectionDesc}>Valores inteiros diferentes de zero. Ex.: Match 2, Mismatch −1, Gap −2.</p>
+          <p style={S.sectionDesc}>Match deve ser positivo. Mismatch e Gap devem ser negativos.</p>
 
           <div style={S.paramsGrid}>
             <label style={S.paramLabel}>
-              Match
+              Match (positivo)
               <input
                 style={S.numberInput}
                 type="number"
@@ -533,7 +525,7 @@ export default function SetupPage({ config, setConfig, onBack, onResult }) {
               />
             </label>
             <label style={S.paramLabel}>
-              Mismatch
+              Mismatch (negativo)
               <input
                 style={S.numberInput}
                 type="number"
@@ -543,7 +535,7 @@ export default function SetupPage({ config, setConfig, onBack, onResult }) {
               />
             </label>
             <label style={S.paramLabel}>
-              Gap
+              Gap (negativo)
               <input
                 style={S.numberInput}
                 type="number"

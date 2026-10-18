@@ -6,6 +6,7 @@ def score_pair(base1, base2, match, mismatch):
         return match
     else:
         return mismatch
+
 def run_local(seq1, seq2, match, mismatch, gap):
 
     seq1 = seq1.strip().upper()
@@ -39,43 +40,35 @@ def run_local(seq1, seq2, match, mismatch, gap):
             vertical = matrix[i - 1][j] + gap
             # Horizontal
             horizontal = matrix[i][j - 1] + gap
-            # Smith-Waterman
-            best_score = max(
-                diagonal,
-                vertical,
-                horizontal,
-                0
-            )
+            # Smith-Waterman: nunca abaixo de zero
+            best_score = max(diagonal, vertical, horizontal, 0)
             matrix[i][j] = best_score
 
             # Prioridade: diagonal > vertical > horizontal
             if best_score == 0:
                 traceback_matrix[i][j] = None
-
             elif best_score == diagonal:
                 traceback_matrix[i][j] = "DIAGONAL"
-
             elif best_score == vertical:
                 traceback_matrix[i][j] = "VERTICAL"
-
             elif best_score == horizontal:
                 traceback_matrix[i][j] = "HORIZONTAL"
 
             # Guarda a maior pontuação encontrada
             if best_score > max_score:
-
                 max_score = best_score
                 max_i = i
                 max_j = j
 
-  #traceback
+    # Traceback: começa na célula de maior score
     i = max_i
     j = max_j
     aligned_seq1 = []
     aligned_seq2 = []
 
-    # Traceback até encontrar uma célula com valor 0
-    while i > 0 and j > 0:
+    # CORREÇÃO: usa "i > 0 or j > 0" para cobrir casos onde o
+    # caminho atinge a borda (i=0 ou j=0) antes do valor zerar.
+    while i > 0 or j > 0:
 
         if matrix[i][j] == 0:
             break
@@ -83,7 +76,6 @@ def run_local(seq1, seq2, match, mismatch, gap):
         direction = traceback_matrix[i][j]
 
         if direction == "DIAGONAL":
-
             aligned_seq1.append(seq1[i - 1])
             aligned_seq2.append(seq2[j - 1])
             i -= 1
@@ -99,7 +91,7 @@ def run_local(seq1, seq2, match, mismatch, gap):
         else:
             break
 
-    # O traceback foi feito de trás para frente, então precisamos inverter as sequências.
+    # O traceback foi feito de trás para frente
     aligned_seq1.reverse()
     aligned_seq2.reverse()
 

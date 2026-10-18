@@ -29,16 +29,25 @@ function validateInput(seq1, seq2, match, mismatch, gap) {
     );
   }
 
-  if (!Number.isInteger(Number(match)) || Number(match) === 0) {
-    throw new Error("Match deve ser um número inteiro diferente de zero.");
+  if (!Number.isInteger(Number(match))) {
+    throw new Error("Match deve ser um número inteiro.");
+  }
+  if (Number(match) <= 0) {
+    throw new Error("Match deve ser maior que zero (valor positivo).");
   }
 
-  if (!Number.isInteger(Number(mismatch)) || Number(mismatch) === 0) {
-    throw new Error("Mismatch deve ser um número inteiro diferente de zero.");
+  if (!Number.isInteger(Number(mismatch))) {
+    throw new Error("Mismatch deve ser um número inteiro.");
+  }
+  if (Number(mismatch) >= 0) {
+    throw new Error("Mismatch deve ser menor que zero (valor negativo).");
   }
 
-  if (!Number.isInteger(Number(gap)) || Number(gap) === 0) {
-    throw new Error("Gap deve ser um número inteiro diferente de zero.");
+  if (!Number.isInteger(Number(gap))) {
+    throw new Error("Gap deve ser um número inteiro.");
+  }
+  if (Number(gap) >= 0) {
+    throw new Error("Gap deve ser menor que zero (valor negativo).");
   }
 
   return {
